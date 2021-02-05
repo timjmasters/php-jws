@@ -1,0 +1,27 @@
+{
+    "name": "timjmasters/php-jws",
+    "description": "Some tools for creating and decoding JWS tokens",
+    "type": "library",
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "TimJMasters\\JWS\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Timothy Masters",
+            "email": "timothy.john.masters@gmail.com",
+            "homepage": "https://timjmasters.com"
+        }
+    ],
+    "require": {
+        "php": "^7.2|^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5"
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}
