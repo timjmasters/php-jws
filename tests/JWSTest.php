@@ -22,6 +22,7 @@ namespace Tests\TimJMasters\JWS;
 use PHPUnit\Framework\TestCase;
 use TimJMasters\Base64URL\Base64URL;
 use TimJMasters\JWS\JWS;
+use TimJMasters\JWS\JWSUtil;
 
 class JWSTest extends TestCase {
 
@@ -41,13 +42,34 @@ class JWSTest extends TestCase {
         ];
 
         // Create a token
-        $jws = JWS::createFromPayload($payload, $options);
+        $jws = JWSUtil::createFromPayload($payload, $options);
 
         // Check the header
         $this->assertEquals($header, $jws->getHeader(), "The header is incorrect.");
 
         // Check the payload
-        $this->assertEquals($payload, $jws->getPayload(), "The payload is incorrect.");
+        $this->assertEquals($payload, $jws->getPayload(true), "The payload is incorrect.");
+
+        // Check the signature
+        $this->assertEquals(Base64URL::decode("WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk"), $jws->getSignature(), "The signature doesn't appear to be correct.");
+
+        // Check header encoded
+        $this->assertEquals("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9", $jws->getHeaderEncoded(), "The encoded header appears to be incorrect.");
+
+        // Check payload encoded
+        $this->assertEquals("eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ", $jws->getPayloadEncoded(), "The encoded payload appears to be incorrect.");
+
+        // Check jws encoded
+        $this->assertEquals(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk",
+                $jws->getEncoded(),
+                "The encoded JWS appears to be incorrect."
+        );
+    }
+
+    public function testCreateFromEncoded() {
+        // Create the jws
+        $jws = JWSUtil::createFromEncoded("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk");
 
         // Check the signature
         $this->assertEquals(Base64URL::decode("WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk"), $jws->getSignature(), "The signature doesn't appear to be correct.");
@@ -66,7 +88,24 @@ class JWSTest extends TestCase {
         );
 
         // Check Verification
-        $this->assertTrue(JWS::verify($jws, "foo_bar_12353253"), "The JWS doesn't have a valid signature for it's contents.");
+        $this->assertTrue(JWSUtil::verify($jws, "foo_bar_12353253"), "The JWS doesn't have a valid signature for it's contents.");
+    }
+
+    public function testInvalidSignature() {
+        // Create the jws
+        $jws = JWSUtil::createFromEncoded("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZP");
+
+        // Check the signature
+        $this->assertEquals(Base64URL::decode("WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZP"), $jws->getSignature(), "The signature doesn't appear to be correct.");
+
+        // Check header encoded
+        $this->assertEquals("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9", $jws->getHeaderEncoded(), "The encoded header appears to be incorrect.");
+
+        // Check payload encoded
+        $this->assertEquals("eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ", $jws->getPayloadEncoded(), "The encoded payload appears to be incorrect.");
+
+        // Check Verification
+        $this->assertFalse(JWSUtil::verify($jws, "foo_bar_12353253"), "The JWS shouldn't be valid.");
     }
 
 }
