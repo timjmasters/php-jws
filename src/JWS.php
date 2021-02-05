@@ -35,6 +35,7 @@ class JWS {
     private $signature;
     private $signatureEncoded;
 
+    // Default options for creating JWS objects @see JWS::createFromPayload
     const DEFAULT_OPTIONS = [
         "type" => "JWT",
         "algorithm" => "HS256",
@@ -153,11 +154,7 @@ class JWS {
                 throw new Exception("The JWS algorithm specified isn't implemented.");
         }
 
-        // Set the value
-        $this->signature = $signed;
-
-        // Set the encoded value
-        $this->signatureEncoded = Base64URL::encode($this->signature);
+        return $signed;
     }
 
     /**
@@ -211,12 +208,10 @@ class JWS {
      *   <td>
      *     <strong>Default: "HS256";</strong> The alg value for the JOSE header, if omitted or null will default to HS256 see <a href='https://tools.ietf.org/html/rfc7518'>rfc7518</a> For algorithm specifications. The signature will be created based on this value.
      *      Possible values:
-     *     <table>
-     *       <tr>
-     *         <td>HS256</td>
-     *         <td>none</td>
-     *       </tr>
-     *     </table>
+     *      <ul>
+     *         <li>HS256</li>
+     *         <li>none</li>
+     *     </ul>
      *   </td>
      *  </tr>
      *  <tr>
@@ -234,6 +229,8 @@ class JWS {
      *           <table>
      *             <tr>
      *               <td>json_encode</td><td>The payload will be encoded using the json_encode function.</td>
+     *             </tr>
+     *             <tr>
      *               <td>as_string</td><td>The payload will be cast to a string and left as is.</td>
      *             </tr>
      *           </table>
@@ -268,7 +265,9 @@ class JWS {
         $jws->setPayload($payload, $options["payload"]);
 
         // Create the signature using header values and the secret option
-        $jws->makeSignature($options["secret"]);
+        $signature = $jws->makeSignature($options["secret"]);
+        $jws->signature = $signature;
+        $jws->signatureEncoded = Base64URL::encode($signature);
 
         return $jws;
     }

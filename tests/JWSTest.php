@@ -66,7 +66,7 @@ class JWSTest extends TestCase {
         );
 
         // Check Verification
-        $this->assertTrue(JWS::verify($jws, $secret), "The JWS doesn't have a valid signature for it's contents.");
+        $this->assertTrue(JWS::verify($jws, "foo_bar_12353253"), "The JWS doesn't have a valid signature for it's contents.");
     }
 
 }
