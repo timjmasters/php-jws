@@ -65,6 +65,13 @@ class JWSTest extends TestCase {
                 $jws->getEncoded(),
                 "The encoded JWS appears to be incorrect."
         );
+        
+        // Check string cast
+        $this->assertEquals(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk",
+                (string) $jws,
+                "The result of casting to string appears to be incorrect."
+        );
     }
 
     public function testCreateFromEncoded() {

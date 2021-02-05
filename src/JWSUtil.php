@@ -32,12 +32,13 @@ class JWSUtil {
     const PAYLOAD_AS_STRING = "as_string";
     // Default options for creating JWS objects @see JWS::createFromPayload
     const DEFAULT_OPTIONS = [
-        "type" => "JWT",
-        "algorithm" => "HS256",
-        "header" => [],
+        "header" => [
+            "alg" => "HS256",
+            "typ" => "JWT",
+        ],
         "payload" => [
             "encoding" => self::PAYLOAD_AS_JSON,
-            "encoding_options" => null,
+            "encoding_options" => 0,
         ],
         "secret" => "",
     ];
@@ -133,14 +134,14 @@ class JWSUtil {
 
         $header = array_merge([], $options["header"]);
 
-        // Set the typ header value
-        if (!isset($header["typ"])) {
-            $header["typ"] = $options["type"] ? $options["type"] : "JWT";
-        }
-
         // Set the header alg value, will be verified when signature is created
         if (!isset($header["alg"])) {
-            $header["alg"] = $options["algorithm"] ? $options["algorithm"] : self::HMAC_SHA256;
+            $header["alg"] = self::HMAC_SHA256;
+        }
+
+        // Set the typ header value
+        if (!isset($header["typ"])) {
+            $header["typ"] = "JWT";
         }
 
         return $header;
