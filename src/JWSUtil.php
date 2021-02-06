@@ -27,7 +27,10 @@ use TimJMasters\Base64URL\Base64URL;
  */
 class JWSUtil {
 
+    const UNSECURED = "none";
     const HMAC_SHA256 = "HS256";
+    const HMAC_SHA384 = "HS384";
+    const HMAC_SHA512 = "HS512";
     const PAYLOAD_AS_JSON = "json_encode";
     const PAYLOAD_AS_STRING = "as_string";
     // Default options for creating JWS objects @see JWS::createFromPayload
@@ -41,6 +44,10 @@ class JWSUtil {
             "encoding_options" => 0,
         ],
         "secret" => "",
+    ];
+    // Default allowed algorithms, don't use the none algorithm by default
+    const DEFAULT_ALLOWED_ALGORITHMS = [
+        self::HMAC_SHA256,
     ];
 
     /**
@@ -165,6 +172,11 @@ class JWSUtil {
                 $signed = static::hmacSignature("sha256", $unsigned, $secret);
                 break;
 
+            // Empty string for unsecured jws
+            case self::UNSECURED:
+                $signed = "";
+                break;
+
             // Throw an exception for unimplemented signature algorithms
             default:
                 throw new Exception("The JWS algorithm specified isn't implemented.");
@@ -231,21 +243,33 @@ class JWSUtil {
 
             // Don't allow unsupported options
             default:
-                throw new Exception("Not sure how to make Payload a string. Unknown payload_encoding option: " . $this->payload_encoding);
+                throw new Exception("Not sure how to make Payload a string. Unknown payload_encoding option: " . $options["encoding"]);
         }
     }
 
     /**
-     * Verify a JWS token is signed correctly
+     * Verify a JWS token is signed correctly. In the case of an unsecured JWS (alg = none)
+     * the verification will fail if the jws has a signature, or a non-empty secret is supplied.
      * @param JWS $jws
-     * @param string $secret the secret for hmac algorithms
+     * @param string $secret the secret for hmac algorithms, or the public key for rsa algorithms
+     * @param array $allowed_algorithms if supplied, the JWS will be rejected if its algorithm isn't in the $allowed_algorithms array
      * @return boolean true if the signature is valid, otherwise false.
      * @throws Exception if the algorithm is supported
      */
-    public static function verify(JWS $jws, $secret) {
-        switch ($jws->getHeader()["alg"]) {
+    public static function verify(JWS $jws, $secret = null, array $allowed_algorithms = self::DEFAULT_ALLOWED_ALGORITHMS) {
+        $alg = $jws->getHeader()["alg"];
+
+        // Check if the algorithm is permitted
+        if ($allowed_algorithms && !in_array($alg, $allowed_algorithms)) {
+            return false; //TODO use exceptions
+        }
+
+        // Verify based on which algorithm is specified
+        switch ($alg) {
             case self::HMAC_SHA256:
                 return static::hmacVerify($jws, $secret);
+            case self::UNSECURED:
+                return static::unsecuredVerify($jws, $secret);
             default:
                 throw new Exception("Verification not implemented for alg: " . $jws->getHeader()["alg"]);
         }
@@ -260,21 +284,38 @@ class JWSUtil {
         return false;
     }
 
+    private static function unsecuredVerify(JWS $jws, $secret) {
+        $signature = $jws->getSignature();
+
+        // If it's using the "none" algorithm, it shouldn't have a signature
+        if ($signature) {
+            //TODO use exceptions instead?
+            return false;
+        }
+
+        // If we're using a secret, we aren't using the "none" algorithm
+        if (!empty($secret)) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Create JWS object from encoded JWS string. This doesn't necessarily 
      * create a JWS with a valid signature. It just uses what's supplied. 
      * Use the verify function to check it's validity.
      * 
-     * @param string $string the encoded jws
+     * @param string $token the encoded jws
      * @param boolean $json_decode Whether to json decode the payload.
      * @return JWS
      * @throws Exception if the string doesn't have 3 parts separated by .
      * TODO check the parts are Base64URL decoded correctly
      */
-    public static function createFromEncoded(string $string, $json_decode = true) {
+    public static function createFromEncoded(string $token, $json_decode = true) {
         $jws = new JWS();
 
-        $parts = explode(".", $string);
+        $parts = explode(".", $token);
         if (3 != count($parts)) {
             throw new Exception("String doesn't appear to be a JWS (couldn't get 3 parts separated by .)");
         }
@@ -286,7 +327,10 @@ class JWSUtil {
 
         // Base64URL decode the payload
         $payload = Base64URL::decode($payloadEncoded);
-        $jws->setPayload($payload);
+        if ($json_decode) {
+            $payload = json_decode($payload, true);
+        }
+        $jws->setPayload($payload, $json_decode);
 
         // Base64URL decode the signature
         $jws->setSignature(Base64URL::decode($signatureEncoded));

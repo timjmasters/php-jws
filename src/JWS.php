@@ -19,6 +19,7 @@
 
 namespace TimJMasters\JWS;
 
+use InvalidArgumentException;
 use TimJMasters\Base64URL\Base64URL;
 
 class JWS {
@@ -29,6 +30,14 @@ class JWS {
     private $payloadEncoded;
     private $signature;
     private $signatureEncoded;
+
+    public function __construct() {
+        $calling = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+
+        if (JWSUtil::class != $calling["class"]) {
+            trigger_error("JWS objects aren't intended to be used directly. Use the JWSUtil class to create JWS objects.", E_USER_WARNING);
+        }
+    }
 
     /**
      * Get the header (not encoded)
@@ -85,6 +94,9 @@ class JWS {
         if ($json_encode) {
             $this->payloadEncoded = Base64URL::encode(json_encode($payload));
         } else {
+            if (!is_string($payload)) {
+                throw new InvalidArgumentException("Can only set strings as payloads. Use the json_encode parameter or serialize your payload as a string.");
+            }
             $this->payloadEncoded = Base64URL::encode($payload);
         }
         return $this;
