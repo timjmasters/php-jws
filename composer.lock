@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "timjmasters/php-base64url",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/timjmasters/php-base64url.git",
-                "reference": "a30e146dfdcb11f8e8ca86da46e6771e30879b2d"
+                "reference": "57794c2b737f85df687f34b5bb8062d5adffb78b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/timjmasters/php-base64url/zipball/a30e146dfdcb11f8e8ca86da46e6771e30879b2d",
-                "reference": "a30e146dfdcb11f8e8ca86da46e6771e30879b2d",
+                "url": "https://api.github.com/repos/timjmasters/php-base64url/zipball/57794c2b737f85df687f34b5bb8062d5adffb78b",
+                "reference": "57794c2b737f85df687f34b5bb8062d5adffb78b",
                 "shasum": ""
             },
             "require": {
@@ -46,9 +46,9 @@
             "description": "A base64url encoder for encoding data as specified in rfc4648 section 5 https://www.rfc-editor.org/rfc/rfc4648#section-5",
             "support": {
                 "issues": "https://github.com/timjmasters/php-base64url/issues",
-                "source": "https://github.com/timjmasters/php-base64url/tree/1.0.0"
+                "source": "https://github.com/timjmasters/php-base64url/tree/1.0.1"
             },
-            "time": "2021-02-05T00:12:14+00:00"
+            "time": "2021-02-06T03:27:17+00:00"
         }
     ],
     "packages-dev": [
