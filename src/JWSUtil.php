@@ -328,7 +328,12 @@ class JWSUtil {
         // Base64URL decode the payload
         $payload = Base64URL::decode($payloadEncoded);
         if ($json_decode) {
-            $payload = json_decode($payload, true);
+            $decoded = json_decode($payload, true);
+            // Check we didn't have a decode fail
+            if ($payload && !$decoded) {
+                throw new \Exception("The payload couldn't be JSON decoded.");
+            }
+            $payload = $decoded;
         }
         $jws->setPayload($payload, $json_decode);
 

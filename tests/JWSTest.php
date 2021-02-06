@@ -75,9 +75,12 @@ class JWSTest extends TestCase {
     }
 
     public function testCreateFromEncoded() {
-        // Create the jws
-        $jws = JWSUtil::createFromEncoded("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk");
+        $token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk";
 
+        // Create the jws
+        $jws = JWSUtil::createFromEncoded($token);
+
+        //TODO test invalid token
         // Check the signature
         $this->assertEquals(Base64URL::decode("WUphQgEfGvtdUCw4UntIh__bemKY6eDFjX2K2XCZPAk"), $jws->getSignature(), "The signature doesn't appear to be correct.");
 
@@ -96,6 +99,8 @@ class JWSTest extends TestCase {
 
         // Check Verification
         $this->assertTrue(JWSUtil::verify($jws, "foo_bar_12353253"), "The JWS doesn't have a valid signature for it's contents.");
+
+        // TODO test json_decode option
     }
 
     public function testAlteredSignature() {
