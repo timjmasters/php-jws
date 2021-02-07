@@ -1,5 +1,6 @@
-[![Travis (.com)](https://img.shields.io/travis/com/timjmasters/php-jws?style=for-the-badge)](https://travis-ci.com/timjmasters/php-jws)
+[![Travis-ci build status](https://img.shields.io/travis/com/timjmasters/php-jws?style=for-the-badge)](https://travis-ci.com/timjmasters/php-jws)
 [![License](https://img.shields.io/github/license/timjmasters/php-jws?color=blue&style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![Code coverage](https://img.shields.io/coveralls/github/timjmasters/php-jws?style=for-the-badge)](https://coveralls.io/github/timjmasters/php-jws)
 
 # php-jws
 Some JWS Tools for PHP - authored by Timothy John Masters

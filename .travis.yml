@@ -7,7 +7,7 @@ notifications:
     on_failure: always
 cache:
     directories:
-        - $HOME/.composer/cache/files
+        - $HOME/composer/cache/files
 before_script:
     - composer self-update
     - composer install --prefer-source --no-interaction
