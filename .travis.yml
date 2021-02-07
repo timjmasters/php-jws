@@ -6,12 +6,15 @@ notifications:
     on_success: never
     on_failure: always
 cache:
- directories:
-   - $HOME/.composer/cache/files
+    directories:
+        - $HOME/.composer/cache/files
 before_script:
     - composer self-update
     - composer install --prefer-source --no-interaction
     - composer dump-autoload
 script:
-    composer run-script test
+    - mkdir -p build/logs
+    - composer run-script test -- --coverage-clover build/logs/clover.xml
+after_script:
+    - php vendor/bin/coveralls -v
     
