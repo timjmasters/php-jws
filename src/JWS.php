@@ -35,7 +35,7 @@ class JWS {
         $calling = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 
         if (JWSUtil::class != $calling["class"]) {
-            trigger_error("JWS objects aren't intended to be used directly. Use the JWSUtil class to create JWS objects.", E_USER_WARNING);
+            trigger_error("JWS objects aren't intended to be instantiated directly. Use the JWSUtil class to create JWS objects.", E_USER_WARNING);
         }
     }
 
@@ -97,7 +97,7 @@ class JWS {
             if (!is_string($payload)) {
                 throw new InvalidArgumentException("Can only set strings as payloads. Use the json_encode parameter or serialize your payload as a string.");
             }
-            $this->payloadEncoded = Base64URL::encode($payload);
+            $this->payloadEncoded = Base64URL::encode((string)$payload);
         }
         return $this;
     }

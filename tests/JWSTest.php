@@ -19,7 +19,10 @@
 
 namespace Tests\TimJMasters\JWS;
 
+use Exception;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use TimJMasters\Base64URL\Base64URL;
 use TimJMasters\JWS\JWS;
 use TimJMasters\JWS\JWSUtil;
@@ -248,4 +251,74 @@ class JWSTest extends TestCase {
         $this->assertEquals($payload, $jws2->getPayload(true), "The payload appears incorrect.");
     }
 
+    public function testInstantiationError() {
+        // Check that instantiating a JWS triggers an error
+        $this->expectTriggeredWarning();
+        $jws = new JWS();
+    }
+
+    public function testInvalidPayload() {
+        // If payload is invalid, invalid argument exception should be thrown
+        $this->expectException(InvalidArgumentException::class);
+
+        $jws = JWSUtil::createFromPayload([]);
+
+        // Try setting an object that can't be cast to string
+        $jws->setPayload(new stdClass());
+    }
+
+    public function testDefaultOptions() {
+        $jws = JWSUtil::createFromPayload([], []);
+
+        $this->assertEquals("HS256", $jws->getHeader()["alg"]);
+        $this->assertEquals("JWT", $jws->getHeader()["typ"]);
+    }
+
+    public function testInvalidHeader1() {
+        $this->expectException(\Exception::class);
+        $jws = JWSUtil::createFromPayload([], [
+                    "header" => false,
+        ]);
+    }
+
+    public function testDefaultHeader() {
+        $jws = JWSUtil::createFromPayload([], [
+                    "header" => [
+                        "alg" => false,
+                        "typ" => false,
+                    ],
+        ]);
+        
+        $this->assertEquals("HS256", $jws->getHeader()["alg"]);
+        $this->assertEquals("JWT", $jws->getHeader()["typ"]);
+    }
+
+    private function expectTriggeredWarning() {
+        $this->expectException(ExpectedTriggeredWarningException::class);
+        $this->expectTriggered(E_WARNING | E_USER_WARNING);
+    }
+
+    private function expectTriggered($expected) {
+        $previous = null;
+        $previous = set_error_handler(function($errno, $errstr, $errfile = null, $errline = null, $errcontext = null) use($previous, $expected): bool {
+            if (0 == ($expected & $errno)) {
+                if ($previous) {
+                    return $previous($errno, $errstr, $errfile, $errline, $errcontext);
+                }
+                return false;
+            }
+
+            switch ($errno) {
+                case E_WARNING:
+                case E_USER_WARNING:
+                    throw new ExpectedTriggeredWarningException();
+            }
+            return true;
+        });
+    }
+
+}
+
+class ExpectedTriggeredWarningException extends Exception {
+    
 }
