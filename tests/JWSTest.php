@@ -26,6 +26,7 @@ use stdClass;
 use TimJMasters\Base64URL\Base64URL;
 use TimJMasters\JWS\JWS;
 use TimJMasters\JWS\JWSUtil;
+use TypeError;
 
 class JWSTest extends TestCase {
 
@@ -102,8 +103,6 @@ class JWSTest extends TestCase {
 
         // Check Verification
         $this->assertTrue(JWSUtil::verify($jws, "foo_bar_12353253"), "The JWS doesn't have a valid signature for it's contents.");
-
-        // TODO test json_decode option
     }
 
     public function testAlteredSignature() {
@@ -267,6 +266,65 @@ class JWSTest extends TestCase {
         $jws->setPayload(new stdClass());
     }
 
+    public function testNullHeader() {
+        $jws = JWSUtil::createFromPayload([]);
+
+        $this->expectException(TypeError::class);
+        $jws->setHeader(null);
+    }
+
+    public function testInvalidEncoded() {
+        $this->expectException(Exception::class);
+
+        $jws = JWSUtil::createFromEncoded("foo.bar");
+    }
+
+    public function testEncodedNotJSON() {
+        $jws = JWSUtil::createFromPayload("Not JSON {}", [
+                    "payload" => [
+                        "encoding" => "as_string",
+                    ]
+        ]);
+
+        // Attempting to json_decode the non json payload should throw an exception
+        $this->expectException(Exception::class);
+        JWSUtil::createFromEncoded($jws->getEncoded());
+    }
+
+    public function testInvalidEncoding() {
+        $this->expectException(Exception::class);
+
+        $jws = JWSUtil::createFromPayload([], [
+                    "payload" => [
+                        "encoding" => "foo",
+                    ]
+        ]);
+    }
+
+    public function testInvalidVerificationAlgorithm() {
+        $jws = JWSUtil::createFromPayload([]);
+
+        $jws->setHeader([
+            "alg" => "foo",
+        ]);
+
+        $this->expectException(Exception::class);
+
+        JWSUtil::verify($jws, null, ["foo"]);
+    }
+
+    public function testInvalidUnsecured() {
+        $jws = JWSUtil::createFromPayload([], [
+                    "header" => [
+                        "alg" => "none",
+                    ]
+        ]);
+
+        // Shouldn't verify if there's a signature and none algorithm is used
+        $jws->setSignature("foo");
+        $this->assertFalse(JWSUtil::verify($jws, null, ["none"]), "Verification should have failed when signature exists and none algorithm used.");
+    }
+
     public function testDefaultOptions() {
         $jws = JWSUtil::createFromPayload([], []);
 
@@ -284,13 +342,22 @@ class JWSTest extends TestCase {
     public function testDefaultHeader() {
         $jws = JWSUtil::createFromPayload([], [
                     "header" => [
-                        "alg" => false,
-                        "typ" => false,
+                        "alg" => null,
+                        "typ" => null,
                     ],
         ]);
-        
+
         $this->assertEquals("HS256", $jws->getHeader()["alg"]);
         $this->assertEquals("JWT", $jws->getHeader()["typ"]);
+    }
+
+    public function testInvalidAlg() {
+        $this->expectException(\Exception::class);
+        $jws = JWSUtil::createFromPayload([], [
+                    "header" => [
+                        "alg" => "foo",
+                    ]
+        ]);
     }
 
     private function expectTriggeredWarning() {

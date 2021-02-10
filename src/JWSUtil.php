@@ -198,6 +198,7 @@ class JWSUtil {
 
         // Check it worked
         if (false === $hash) {
+            //TODO not sure how to test this
             throw new Exception("Couldn't hash data using algorithm: " . $alg);
         }
         return $hash;
@@ -233,6 +234,7 @@ class JWSUtil {
             case self::PAYLOAD_AS_JSON:
                 $payload = json_encode($payload, $options["encoding_options"]);
                 if (false === $payload) {
+                    // TODO not sure how to test this
                     throw new Exception("Couldn't JSON encode payload.");
                 }
                 return $payload;
@@ -263,7 +265,6 @@ class JWSUtil {
         if ($allowed_algorithms && !in_array($alg, $allowed_algorithms)) {
             return false; //TODO use exceptions
         }
-
         // Verify based on which algorithm is specified
         switch ($alg) {
             case self::HMAC_SHA256:
@@ -286,7 +287,6 @@ class JWSUtil {
 
     private static function unsecuredVerify(JWS $jws, $secret) {
         $signature = $jws->getSignature();
-
         // If it's using the "none" algorithm, it shouldn't have a signature
         if ($signature) {
             //TODO use exceptions instead?
