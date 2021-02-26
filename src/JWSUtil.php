@@ -179,7 +179,7 @@ class JWSUtil {
             case self::RSA_SHA256:
                 $signed = static::rsaSignature($unsigned, $secret);
                 break;
-                
+
             // Empty string for unsecured jws
             case self::UNSECURED:
                 $signed = "";
@@ -286,8 +286,9 @@ class JWSUtil {
         // Verify based on which algorithm is specified
         switch ($alg) {
             case self::HMAC_SHA256:
-            case self::RSA_SHA256:
                 return static::signatureVerify($jws, $secret);
+            case self::RSA_SHA256:
+                return static::rsaVerify($jws, $secret);
             case self::UNSECURED:
                 return static::unsecuredVerify($jws, $secret);
             default:
@@ -302,6 +303,23 @@ class JWSUtil {
             return true;
         }
         return false;
+    }
+
+    private static function rsaVerify(JWS $jws, $secret) {
+        $key = openssl_pkey_get_public($secret);
+
+        if (!$key) {
+            throw new \Exception("Secret doesn't appear to be public key, please supply in PEM format.");
+        }
+
+        $result = openssl_verify($jws->getHeaderEncoded() . "." . $jws->getPayloadEncoded(), $jws->getSignature(), $key);
+        
+        if(-1 === $result){
+            //TODO
+            throw new \Exception("Failed to verify signature.");
+        }
+        
+        return $result === 1;
     }
 
     private static function unsecuredVerify(JWS $jws, $secret) {
