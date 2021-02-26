@@ -31,6 +31,7 @@ class JWSUtil {
     const HMAC_SHA256 = "HS256";
     const HMAC_SHA384 = "HS384";
     const HMAC_SHA512 = "HS512";
+    const RSA_SHA256 = "RS256";
     const PAYLOAD_AS_JSON = "json_encode";
     const PAYLOAD_AS_STRING = "as_string";
     // Default options for creating JWS objects @see JWS::createFromPayload
@@ -48,6 +49,7 @@ class JWSUtil {
     // Default allowed algorithms, don't use the none algorithm by default
     const DEFAULT_ALLOWED_ALGORITHMS = [
         self::HMAC_SHA256,
+        self::RSA_SHA256,
     ];
 
     /**
@@ -67,6 +69,7 @@ class JWSUtil {
      *      Possible values:
      *      <ul>
      *         <li>HS256</li>
+     *         <li>RS256</li>
      *         <li>none</li>
      *     </ul>
      *   </td>
@@ -172,6 +175,11 @@ class JWSUtil {
                 $signed = static::hmacSignature("sha256", $unsigned, $secret);
                 break;
 
+            // RSA SHA 256
+            case self::RSA_SHA256:
+                $signed = static::rsaSignature($unsigned, $secret);
+                break;
+                
             // Empty string for unsecured jws
             case self::UNSECURED:
                 $signed = "";
@@ -202,6 +210,16 @@ class JWSUtil {
             throw new Exception("Couldn't hash data using algorithm: " . $alg);
         }
         return $hash;
+    }
+
+    private static function rsaSignature($data, $key) {
+        $signature = null;
+
+        if (!openssl_sign($data, $signature, $key)) {
+            throw new Exception("Couldn't sign data.");
+        }
+
+        return $signature;
     }
 
     /**
@@ -268,7 +286,8 @@ class JWSUtil {
         // Verify based on which algorithm is specified
         switch ($alg) {
             case self::HMAC_SHA256:
-                return static::hmacVerify($jws, $secret);
+            case self::RSA_SHA256:
+                return static::signatureVerify($jws, $secret);
             case self::UNSECURED:
                 return static::unsecuredVerify($jws, $secret);
             default:
@@ -276,7 +295,7 @@ class JWSUtil {
         }
     }
 
-    private static function hmacVerify(JWS $jws, $secret) {
+    private static function signatureVerify(JWS $jws, $secret) {
         $hash = Base64URL::encode(static::makeSignature($jws, $secret));
 
         if ($hash === $jws->getSignatureEncoded()) {
