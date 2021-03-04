@@ -50,6 +50,26 @@ class RSATest extends TestCase {
         $this->assertTrue(JWSUtil::verify($jws, $public, [JWSUtil::RSA_SHA256]), "The JWS didn't verify");
     }
 
+    public function testRS256StringKeys() {
+        $header = [
+            "alg" => "RS256",
+            "typ" => "JWT",
+        ];
+        $payload = [
+            "foo" => "bar",
+        ];
+        $private = file_get_contents($this->getPrivate256KeyPath());
+        $public = file_get_contents($this->getPublic256KeyPath());
+
+        $options = [
+            "header" => $header,
+            "secret" => $private,
+        ];
+
+        $jws = JWSUtil::createFromPayload($payload, $options);
+        $this->assertTrue(JWSUtil::verify($jws, $public, [JWSUtil::RSA_SHA256]), "The JWS didn't verify.");
+    }
+
     private function getRS256PrivateKey() {
         if (!realpath($this->getPrivate256KeyPath())) {
             $this->createRS256Certs();

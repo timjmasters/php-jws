@@ -271,7 +271,7 @@ class JWSUtil {
      * Verify a JWS token is signed correctly. In the case of an unsecured JWS (alg = none)
      * the verification will fail if the jws has a signature, or a non-empty secret is supplied.
      * @param JWS $jws
-     * @param string $secret the secret for hmac algorithms, or the public key for rsa algorithms
+     * @param $secret the secret for hmac algorithms, or the public key for rsa algorithms
      * @param array $allowed_algorithms if supplied, the JWS will be rejected if its algorithm isn't in the $allowed_algorithms array
      * @return boolean true if the signature is valid, otherwise false.
      * @throws Exception if the algorithm is supported
