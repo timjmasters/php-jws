@@ -51,7 +51,7 @@ class JWS {
      * Encode the header
      */
     private function encodeHeader() {
-        $this->headerEncoded = Base64URL::encode(json_encode($this->getHeader()));
+        $this->headerEncoded = Base64URL::encode(json_encode($this->getHeader(), JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -92,7 +92,7 @@ class JWS {
     public function setPayload($payload, $json_encode = false) {
         $this->payload = $payload;
         if ($json_encode) {
-            $this->payloadEncoded = Base64URL::encode(json_encode($payload));
+            $this->payloadEncoded = Base64URL::encode(json_encode($payload, JSON_UNESCAPED_SLASHES));
         } else {
             if (!is_string($payload)) {
                 throw new InvalidArgumentException("Can only set strings as payloads. Use the json_encode parameter or serialize your payload as a string.");
