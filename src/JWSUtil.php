@@ -164,7 +164,7 @@ class JWSUtil {
      * @return string
      * @throws Exception
      */
-    public static function makeSignature(JWS $jws, string $secret) {
+    public static function makeSignature(JWS $jws, $secret) {
         // Get the unsigned concatenation of header and payload
         $unsigned = $jws->getHeaderEncoded() . "." . $jws->getPayloadEncoded();
 
@@ -212,10 +212,10 @@ class JWSUtil {
         return $hash;
     }
 
-    private static function rsaSignature($data, $key) {
+    private static function rsaSignature($data, $key, $alg = OPENSSL_ALGO_SHA256) {
         $signature = null;
 
-        if (!openssl_sign($data, $signature, $key)) {
+        if (!openssl_sign($data, $signature, $key, $alg)) {
             throw new Exception("Couldn't sign data.");
         }
 
@@ -278,7 +278,6 @@ class JWSUtil {
      */
     public static function verify(JWS $jws, $secret = null, array $allowed_algorithms = self::DEFAULT_ALLOWED_ALGORITHMS) {
         $alg = $jws->getHeader()["alg"];
-
         // Check if the algorithm is permitted
         if ($allowed_algorithms && !in_array($alg, $allowed_algorithms)) {
             return false; //TODO use exceptions
@@ -305,20 +304,13 @@ class JWSUtil {
         return false;
     }
 
-    private static function rsaVerify(JWS $jws, $secret) {
-        $key = openssl_pkey_get_public($secret);
-
-        if (!$key) {
-            throw new \Exception("Secret doesn't appear to be public key, please supply in PEM format.");
-        }
-
-        $result = openssl_verify($jws->getHeaderEncoded() . "." . $jws->getPayloadEncoded(), $jws->getSignature(), $key);
-        
-        if(-1 === $result){
+    private static function rsaVerify(JWS $jws, $key, $alg = OPENSSL_ALGO_SHA256) {
+        $result = openssl_verify($jws->getHeaderEncoded() . "." . $jws->getPayloadEncoded(), $jws->getSignature(), $key, $alg);
+        if (-1 === $result) {
             //TODO
             throw new \Exception("Failed to verify signature.");
         }
-        
+
         return $result === 1;
     }
 
