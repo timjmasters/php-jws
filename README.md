@@ -66,15 +66,14 @@ It's not recommended you use the setters directly, rather create tokens using th
  - `$jws->setSignature($signature)`
    - Set the signature
    - Not checked against the header and payload, not recommended you use this directly
-## Notes
 
-<details>
-<summary>Currently supported algorithms</summary>
+## Notes
+#### Currently supported algorithms
  - HS256
    - HMAC SHA 256 - JWS tokens will be signed using the secret option
  - RS256
-   - RSA SHA 256 - JWS tokens will be signed using the assuming the secret option is a private key
-</details>
+   - RSA SHA 256 - JWS tokens will be signed using the assuming the secret option is a private key#
+
 
 ## Examples
 ### Create a JWS object from an array, json encode it

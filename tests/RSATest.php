@@ -135,7 +135,7 @@ class RSATest extends TestCase {
         $filesystem->dumpFile($public, openssl_pkey_get_details($res)["key"]);
 
         // Free the resource
-        openssl_pkey_free($res);
+        @openssl_pkey_free($res);
     }
 
     private function getPrivate256KeyPath() {
