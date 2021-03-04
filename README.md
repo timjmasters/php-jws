@@ -72,7 +72,7 @@ It's not recommended you use the setters directly, rather create tokens using th
  - HS256
    - HMAC SHA 256 - JWS tokens will be signed using the secret option
  - RS256
-   - RSA SHA 256 - JWS tokens will be signed using the assuming the secret option is a private key#
+   - RSA SHA 256 - JWS tokens will be signed assuming the secret option is a private key
 
 
 ## Examples
